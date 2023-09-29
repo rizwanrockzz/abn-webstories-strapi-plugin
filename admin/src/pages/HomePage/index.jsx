@@ -10,37 +10,24 @@ import { useEffect, useState } from 'react';
 import pluginId from '../../pluginId';
 import { Button } from '@strapi/design-system';
 import CryptoJS from 'crypto-js';
-import { EmptyStateLayout, Box, BaseHeaderLayout, Crumb, Breadcrumbs } from '@strapi/design-system';
+import { EmptyStateLayout, Box, BaseHeaderLayout, Crumb, Breadcrumbs, Typography } from '@strapi/design-system';
 // import jwt from 'jsonwebtoken';
 
 const HomePage = () => {
   const [loggedUserData, setloggedUserData] = useState();
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo'); // in dev mode
-    // const userInfo = sessionStorage.getItem('userInfo');  // in production mode
+    // const userInfo = localStorage.getItem('userInfo'); // in dev mode
+    const userInfo = sessionStorage.getItem('userInfo');  // in production mode
     console.log("userInfo");
     console.log(userInfo);
     setloggedUserData(userInfo)
   }, []);
-
-  // async function encryptUserInfo(datatoencrypt, secretKey) {
-  //   const ciphertext = CryptoJS.AES.encrypt(datatoencrypt, secretKey).toString();
-  //   return ciphertext;
-  // }
 
   async function encryptUserInfo(datatoencrypt, secretKey, signatureKey) {
     const encryptedData = CryptoJS.AES.encrypt(datatoencrypt, secretKey).toString();
     const signature = CryptoJS.HmacSHA256(encryptedData, signatureKey).toString();
     return `${encryptedData}.${signature}`;
   }
-
-  // async function generateJWTAuthToken(encryptedUserinfo,secretKey) {
-  //   const payload = {
-  //     userinfo: encryptedUserinfo,
-  //     exp: Math.floor(Date.now() / 1000) + (2 * 60 * 60) // Expires in 2 hours
-  //   };
-  //   return "jwt.sign(payload, secretKey)";
-  // }
 
   async function generateAuthToken(userInfo, secretKey, signatureKey) {
     const payload = {
@@ -55,12 +42,15 @@ const HomePage = () => {
     return `${encryptedPayload}.${signature}`;
   }
 
-  const redirectToWebStories = async (e) => {
+  const redirectToWebStories = async (e, typeOfWebsite) => {
     e.preventDefault();
 
 
     const secretKey = "This is a supersecret secret key used for special auth purposes for webstories";
     const signatureKey = "This is a supersecret signature secret for webstories";
+
+    console.log("typeOfWebsite");
+    console.log(typeOfWebsite);
 
     console.log("redirectToWebStories");
     console.log("loggedUserData");
@@ -69,9 +59,9 @@ const HomePage = () => {
     console.log("loggedUserJSONData");
     console.log(loggedUserJSONData);
     // const domainorip = "15.206.27.72:8080";
-    // const domainorip = "localhost:8001";
+    const domainorip = "localhost:8080";
     // const domainorip = "https://abn-webstories-demo-by-rizwan.netlify.app";
-    const domainorip = "abn-webstories-demo-by-rizwan.netlify.app";
+    // const domainorip = "abn-webstories-demo-by-rizwan.netlify.app";
 
     // const encryptedToken = "rizwanrockzz";
     const encryptedUserInfo = await encryptUserInfo(loggedUserData, secretKey, signatureKey);
@@ -83,8 +73,10 @@ const HomePage = () => {
     const encodedAuthTokenForBrowser = encodeURIComponent(authtoken);
     console.log("authtoken");
     console.log(authtoken);
-    const redirectUrl = `http://${domainorip}/?token=${encodedAuthTokenForBrowser}&userInfo=${encodedUserInfoForBrowser}`
-    // const redirectUrl = `http://${domainorip}/?token=${encodedAuthTokenForBrowser}&userInfo=${encodedUserInfoForBrowser}&fname=${loggedUserJSONData.firstname}&lname=${loggedUserJSONData.lastname}`
+    const encryptTypeOfWebsite = await encryptUserInfo(typeOfWebsite, secretKey, signatureKey);
+    const encodedTypeOfWebsite = encodeURIComponent(encryptTypeOfWebsite);
+    const redirectUrl = `http://${domainorip}/?token=${encodedAuthTokenForBrowser}&userInfo=${encodedUserInfoForBrowser}&website=${encodedTypeOfWebsite}`
+    // const redirectUrl = `http://${domainorip}/?token=${encodedAuthTokenForBrowser}&userInfo=${encodedUserInfoForBrowser}&website=${encodedTypeOfWebsite}`
 
     console.log("Redirecting");
     console.log(redirectUrl);
@@ -96,7 +88,40 @@ const HomePage = () => {
       <Box background="neutral100">
         <BaseHeaderLayout title="Web Stories" as="h2" />
       </Box>
-      {/* <div>
+
+      <Box padding={8} background="neutral100">
+        <EmptyStateLayout content="Click the below buttons to go to respective webstories dashboard" action={
+          <>
+            {loggedUserData ? (
+              <>
+                <div style={{ marginBottom: "2rem", marginTop: "2rem", display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: "1rem" }}>
+                  {/* <Typography ellipsis>For Going To Andhra Jyothi Web Stories Click The Button Below</Typography > */}
+                  <Button variant="secondary" onClick={(e) => redirectToWebStories(e, "andhraJyothi")}>Andhra Jyothi Web Stories</Button>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: "1rem" }}>
+                  {/* <Typography ellipsis>For Going To Chitra Jyothi Web Stories Click The Button Below</Typography > */}
+                  <Button variant="secondary" onClick={(e) => redirectToWebStories(e, "chitraJyothi")}>Chitra Jyothi Web Stories</Button>
+                </div>
+              </>
+            ) : (
+              <p>Not allowed to view {pluginId}&apos;s HomePage</p>
+            )}
+
+          </>
+        }
+        />
+      </Box>
+
+
+
+    </>
+  );
+};
+
+export default HomePage;
+
+
+{/* <div>
         {loggedUserData ? (
           // <iframe
           //   src="http://3.111.23.240:8080/"
@@ -112,27 +137,3 @@ const HomePage = () => {
           <p>Not allowed to view {pluginId}&apos;s HomePage</p>
         )}
       </div> */}
-
-      <Box padding={8} background="neutral100">
-        <EmptyStateLayout content="Click the below button to redirect to web stories" action={
-          <>
-            {loggedUserData ? (
-
-              <Button variant="secondary" onClick={redirectToWebStories}>Web Stories</Button>
-            ) : (
-              <p>Not allowed to view {pluginId}&apos;s HomePage</p>
-            )}
-          </>
-        }
-
-        />
-
-      </Box>
-
-
-
-    </>
-  );
-};
-
-export default HomePage;

@@ -17,7 +17,9 @@ const HomePage = () => {
   const [loggedUserData, setloggedUserData] = useState();
   useEffect(() => {
     // const userInfo = localStorage.getItem('userInfo'); // in dev mode
-    const userInfo = sessionStorage.getItem('userInfo');  // in production mode
+    // const userInfo = sessionStorage.getItem('userInfo');  // in production mode
+    let userInfo = localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo');
+
     console.log("userInfo");
     console.log(userInfo);
     setloggedUserData(userInfo)
@@ -58,9 +60,9 @@ const HomePage = () => {
     const loggedUserJSONData = JSON.parse(loggedUserData);
     console.log("loggedUserJSONData");
     console.log(loggedUserJSONData);
-    // const domainorip = "15.206.27.72:8080";
+    // const domainorip = "13.233.225.191:8080";
     const domainorip = "localhost:8080";
-    // const domainorip = "https://abn-webstories-demo-by-rizwan.netlify.app";
+    // const domainorip = "abn-webstories-dev-version.netlify.app";
     // const domainorip = "abn-webstories-demo-by-rizwan.netlify.app";
 
     // const encryptedToken = "rizwanrockzz";
